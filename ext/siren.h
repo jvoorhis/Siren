@@ -27,7 +27,6 @@ typedef Voice *VoiceID;
 typedef struct _DSPKernel {
   PaStream *stream;
   Voice *voiceList;
-
 } DSPKernel;
 
 int NewDSPKernel(DSPKernel **outKernel);

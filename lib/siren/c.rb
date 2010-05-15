@@ -20,9 +20,13 @@ module Siren
              :next,  :pointer
     end
 
-    class Kernel < FFI::Struct
+    class DSPKernel < FFI::ManagedStruct
       layout :stream,    :pointer,
              :voiceList, :pointer
+      
+      def self.release(ptr)
+        C.DisposeDSPKernel(ptr)
+      end
     end 
   end
 end

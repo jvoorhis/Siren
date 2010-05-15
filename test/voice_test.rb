@@ -4,19 +4,18 @@ class VoiceTest < Test::Unit::TestCase
   include Siren
 
   def test_new_voice
-    using_kernel do |k|
-      Siren::C.DSPKernelStart(k)
-      v1 = Oscil.new(k, :frequency => 330)
-      sleep 0.25
-      v2 = Oscil.new(k, :frequency => 440)
-      sleep 0.25
-      v3 = Oscil.new(k, :frequency => 495)
-      sleep 1
-      v3.dispose
-      v2.dispose
-      v1.dispose
-      Siren::C.DSPKernelStop(k)
-    end
+    kernel = DSPKernel.new
+    kernel.start
+    v1 = Oscil.new(kernel, :frequency => 330)
+    sleep 0.25
+    v2 = Oscil.new(kernel, :frequency => 440)
+    sleep 0.25
+    v3 = Oscil.new(kernel, :frequency => 495)
+    sleep 1
+    v3.dispose
+    v2.dispose
+    v1.dispose
+    kernel.stop
   end
   
   class Oscil < Siren::Voice
