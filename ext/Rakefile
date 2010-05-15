@@ -1,0 +1,48 @@
+require 'fileutils'
+
+SIREN = 'libsiren.dylib'
+
+FRAMEWORKS = %w[
+  CoreFoundation
+  CoreServices
+  CoreAudio
+  AudioUnit
+  AudioToolbox
+]
+
+LIBS = %w[
+  /usr/local/lib/libportaudio.a
+]
+
+TLSF_DIR = 'vendor/TLSF-2.4.6/src'
+TLSF = File.join(TLSF_DIR, 'tlsf.o')
+
+SRC = %w[
+  siren.h
+  siren.c
+]
+
+file TLSF do
+  Dir.chdir(TLSF_DIR) do
+    sh 'make'
+  end
+end
+
+file SIREN => [TLSF, *SRC] do |t|
+  includes = "-I #{TLSF_DIR}"
+  frameworks = FRAMEWORKS.map { |f| "-framework #{f}" } * " "
+  libs = LIBS * " "
+  sh "gcc -Wall #{includes} -c -fPIC -O3 siren.c"
+  sh "gcc -dynamiclib #{frameworks} #{libs} siren.o #{TLSF} -o #{t.name}"
+end
+
+task :test => SIREN
+
+task :clean do
+  FileUtils.rm_f TLSF
+  FileUtils.rm_f '*.o'
+  FileUtils.rm_f '*.dylib'
+end
+
+task :default => [SIREN, :test]
+
