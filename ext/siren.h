@@ -25,11 +25,12 @@ typedef struct _Voice {
 typedef Voice *VoiceID;
 
 typedef struct _DSPKernel {
+  double fs;
   PaStream *stream;
   Voice *voiceList;
 } DSPKernel;
 
-int NewDSPKernel(DSPKernel **outKernel);
+int NewDSPKernel(double fs, DSPKernel **outKernel);
 
 int DisposeDSPKernel(DSPKernel *kernel);
 

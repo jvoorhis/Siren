@@ -9,7 +9,7 @@ class RuntimeTest < Test::Unit::TestCase
 
   def test_new_kernel
     FFI::MemoryPointer.new(:pointer) do |p|
-      assert_equal 0, C.NewDSPKernel(p), "Expected NewDSPKernel to return 0 for success."
+      assert_equal 0, C.NewDSPKernel(44100, p), "Expected NewDSPKernel to return 0 for success."
       assert !p.read_pointer.null?, "Expected DSPKernel to be set on success."
       kernel = C::DSPKernel.new(p.read_pointer)
       assert !kernel[:stream].null?, "Expected stream to be initialized."

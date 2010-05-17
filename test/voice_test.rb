@@ -19,18 +19,16 @@ class VoiceTest < Test::Unit::TestCase
   end
   
   class Oscil < Siren::Voice
-    include Siren
-
     var :frequency, :float, 0.0
     var :phase, :float, 0.0
 
-    def transition
-      phase(phase + 1/44100.0)
-    end
-
     def render
-      0.2 * Siren.sin(2.0 * Math::PI * frequency * phase)
+      0.2 * sin(2.0 * Math::PI * frequency * phase)
     end 
+
+    def update(ts)
+      set(:phase, phase + ts)
+    end
   end
 end
 

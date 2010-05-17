@@ -21,9 +21,11 @@ int InitDSPSystem()
   return 0;
 }
 
-int NewDSPKernel(DSPKernel **outKernel)
+int NewDSPKernel(double fs, DSPKernel **outKernel)
 {
   DSPKernel *kernel = malloc(sizeof(DSPKernel));
+  kernel->fs = fs;
+
   PaError err;
   err = Pa_OpenDefaultStream(&kernel->stream,
                              0, 1,

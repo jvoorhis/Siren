@@ -1,5 +1,7 @@
 module Siren
   class Voice
+    include Siren
+
     def self.var(name, type, default = nil)
       @vars ||= []
       @vars.push(Var[name, type, default])
@@ -20,7 +22,9 @@ module Siren
     def initialize(kernel, initial_values = {})
       @kernel = kernel
       @state = alloc_render_state(initial_values)
-      @voice = C.NewVoice(@kernel, make_render_func(render), make_transition_func(transition), @state)
+      @render_func = make_render_func(render)
+      @update_func = make_update_func(update(@kernel.ts))
+      @voice = C.NewVoice(@kernel, @render_func, @update_func, @state)
     end
     
     def dispose
@@ -28,13 +32,13 @@ module Siren
       @state.pointer.free
     end
 
-    def transition
-      fail "transition is undefined!"
-    end
-
     def render
-      fail "transition is undefined!"
+      fail "render is undefined!"
     end                         
+
+    def update(ts)
+      fail "update is undefined!"
+    end
 
     protected
 
@@ -46,8 +50,8 @@ module Siren
       Float.new(Get.new(var(name)))
     end
 
-    def put(name, value)
-      Float.new(Put.new(var(name), value.node))
+    def set(name, value)
+      Float.new(Set.new(var(name), value.node))
     end
     
     private
@@ -98,16 +102,16 @@ module Siren
       EE.pointer_to_global(Mod.functions[render_func_sym])
     end
 
-    def transition_func_sym
-      :"transition_#{self.class.object_id}"
+    def update_func_sym
+      :"update_#{self.class.object_id}"
     end
 
-    def transition_func_type
+    def update_func_type
       LLVM.Function([LLVM.Pointer(state_target_type)], LLVM.Void)
     end
 
-    def make_transition_func(expr)
-      Mod.functions.add(transition_func_sym, transition_func_type) do |func, state|
+    def make_update_func(expr)
+      Mod.functions.add(update_func_sym, update_func_type) do |func, state|
         entry = func.basic_blocks.append("entry")
         builder = LLVM::Builder.create
         builder.position_at_end(entry)
@@ -118,8 +122,8 @@ module Siren
         codegen = CodeGenerator.new(Mod, func, entry, builder, bindings)
         expr.accept(codegen)
         builder.ret_void
-      end unless Mod.functions[transition_func_sym]         
-      EE.pointer_to_global(Mod.functions[transition_func_sym])
+      end unless Mod.functions[update_func_sym]         
+      EE.pointer_to_global(Mod.functions[update_func_sym])
     end
   end
 end

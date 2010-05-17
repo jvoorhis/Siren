@@ -6,7 +6,7 @@ module Siren
     ffi_lib 'ext/libsiren.dylib'
 
     attach_function :InitDSPSystem, [], :int
-    attach_function :NewDSPKernel, [:pointer], :int
+    attach_function :NewDSPKernel, [:double, :pointer], :int
     attach_function :DisposeDSPKernel, [:pointer], :int
     attach_function :DSPKernelCallback, [:pointer, :pointer, :ulong, :pointer, :int, :pointer], :int
     attach_function :DSPKernelStart, [:pointer], :int
@@ -21,7 +21,8 @@ module Siren
     end
 
     class DSPKernel < FFI::ManagedStruct
-      layout :stream,    :pointer,
+      layout :fs,        :double,
+             :stream,    :pointer,
              :voiceList, :pointer
       
       def self.release(ptr)
