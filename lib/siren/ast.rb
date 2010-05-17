@@ -117,7 +117,7 @@ module Siren
     end
   end
 
-  class Put
+  class Set
     attr_reader :variable, :value
 
     def initialize(variable, value)

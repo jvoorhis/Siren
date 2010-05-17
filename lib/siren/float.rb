@@ -28,11 +28,33 @@ module Siren
     end
 
     def -(rhs)
-      Float.new(FSub.new(self.node, rhs.node))
+      case rhs
+      when Float
+        Float.new(FSub.new(self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+        a - b
+      end
     end
 
     def *(rhs)
-      Float.new(FMul.new(self.node, rhs.node))
+      case rhs
+      when Float
+        Float.new(FMul.new(self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+        a * b
+      end
+    end
+
+    def /(rhs)
+      case rhs
+      when Float
+        Float.new(FDiv.new(self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+        a / b
+      end
     end
 
     def accept(visitor)
