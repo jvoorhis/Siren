@@ -25,6 +25,10 @@ module Siren
       @render_func = make_render_func(render)
       @update_func = make_update_func(update(@kernel.ts))
       @voice = C.NewVoice(@kernel, @render_func, @update_func, @state)
+      unless $d
+        $d = true
+	Mod.dump
+      end
     end
     
     def dispose

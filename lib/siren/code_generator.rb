@@ -4,7 +4,10 @@ require 'llvm/execution_engine'
 module Siren
   LLVM.init_x86
   Mod = LLVM::Module.create("Siren")
+  Mod.functions.add(:powf, [LLVM::Float, LLVM::Float], LLVM::Float)
   Mod.functions.add(:sinf, [LLVM::Float], LLVM::Float)
+  Mod.functions.add(:cosf, [LLVM::Float], LLVM::Float)
+  Mod.functions.add(:tanf, [LLVM::Float], LLVM::Float)
 
   EE = LLVM::ExecutionEngine.create_jit_compiler(
     LLVM::ModuleProvider.for_existing_module(Mod)
@@ -45,9 +48,28 @@ module Siren
       @builder.fsub(lhs, rhs)
     end
 
+    def visit_pow(lhs, rhs)
+      pow = @module.functions[:powf]
+      @builder.call(pow, lhs, rhs)
+    end
+
     def visit_sin(arg)
       sin = @module.functions[:sinf]
       @builder.call(sin, arg)
+    end
+
+    def visit_cos(arg)
+      cos = @module.functions[:cosf]
+      @builder.call(cos, arg)
+    end
+    
+    def visit_tan(arg)
+      tan = @module.functions[:tanf]
+      @builder.call(tan, arg)
+    end
+
+    def visit_literal_bool(val)
+      LLVM::Int1.from_i(val)
     end
 
     def visit_get(var)
@@ -65,6 +87,10 @@ module Siren
         fail "Undeclared variable #{var}!"
       end
       nil
+    end
+
+    def visit_select(condition, consequent, alternative)
+      @builder.select(condition, consequent, alternative)
     end
   end
 end
