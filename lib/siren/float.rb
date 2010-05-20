@@ -17,13 +17,6 @@ module Siren
       end
     end
 
-    def self.select(c, t, f)
-      c = Siren.Bool(c)
-      t = Siren.Float(t)
-      f = Siren.Float(f)
-      Float.new(Select.new(c.node, t.node, f.node))
-    end
-
     def -@
       Float.new(FSub.new(LiteralFloat.new(0), self.node))
     end
@@ -82,6 +75,26 @@ module Siren
       end
     end
 
+    def >(rhs)
+      case rhs
+      when Float
+        Bool.new(FCmp.new(:ogt, self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+        a > b
+      end
+    end
+
+    def <(rhs)
+      case rhs
+      when Float
+        Bool.new(FCmp.new(:olt, self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+        a < b
+      end
+    end
+
     def accept(visitor)
       @node.accept(visitor)
     end
@@ -95,6 +108,13 @@ module Siren
     else
       Float.new(LiteralFloat.new(x))
     end
+  end
+
+  def selectF(c, t, f)
+    c = Siren.Bool(c)
+    t = Siren.Float(t)
+    f = Siren.Float(f)
+    Float.new(Select.new(c.node, t.node, f.node))
   end
 end
 

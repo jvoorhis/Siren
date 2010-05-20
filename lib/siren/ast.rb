@@ -79,6 +79,22 @@ module Siren
     end
   end
 
+  class FCmp
+    attr_reader :pred, :lhs, :rhs
+
+    def initialize(pred, lhs, rhs)
+      @pred = pred
+      @lhs  = lhs
+      @rhs  = rhs
+    end
+
+    def accept(visitor)
+      l = @lhs.accept(visitor)
+      r = @rhs.accept(visitor)
+      visitor.visit_fcmp(@pred, l, r)
+    end
+  end
+
   class PowF
     attr_reader :lhs, :rhs
 

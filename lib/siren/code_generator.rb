@@ -48,6 +48,10 @@ module Siren
       @builder.fsub(lhs, rhs)
     end
 
+    def visit_fcmp(pred, lhs, rhs)
+      @builder.fcmp(pred, lhs, rhs)
+    end
+
     def visit_pow(lhs, rhs)
       pow = @module.functions[:powf]
       @builder.call(pow, lhs, rhs)
