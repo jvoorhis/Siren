@@ -4,6 +4,10 @@ module Siren
 
   module_function
 
+  def u(t)
+    selectF t < 0, 0, 1
+  end
+
   def sin(x)
     Float.new(Sin.new(x.node))
   end
