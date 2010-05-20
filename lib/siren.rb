@@ -6,6 +6,7 @@ require 'siren/math'
 require 'siren/code_generator'
 require 'siren/voice'
 require 'siren/dsp_kernel'
+require 'siren/event'
 
 module Kernel
   def target_type_for(tag)
