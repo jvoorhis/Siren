@@ -12,7 +12,7 @@ module Siren
       alias :| :par
 
       def repeat(n)
-        Array.new(n) { self }.inject(:&)
+        ([self] * n).reduce(:&)
       end
       alias :* :repeat
     end
