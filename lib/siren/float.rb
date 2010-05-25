@@ -18,7 +18,7 @@ module Siren
     end
 
     def -@
-      Float.new(FSub.new(LiteralFloat.new(0), self.node))
+      0 - self
     end
 
     def +@
