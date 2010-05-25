@@ -46,7 +46,7 @@ module Siren
 
     def accept(visitor)
       l = @lhs.accept(visitor)
-      r = @lhs.accept(visitor)
+      r = @rhs.accept(visitor)
       visitor.visit_fdiv(l, r)
     end
   end
