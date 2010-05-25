@@ -33,6 +33,10 @@ module Siren
       fail "update is undefined!"
     end
 
+    def tail
+      0.0
+    end
+
     protected
 
     def var(name)
