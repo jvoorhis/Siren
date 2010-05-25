@@ -5,13 +5,7 @@ module Siren
     def self.var(name, type, default = nil)
       @vars ||= []
       @vars.push(Var[name, type, default])
-      define_method(name) do |val = nil|
-        if val.nil?
-          Float.new(get(name))
-        else
-          Float.new(put(name, val))
-        end
-      end
+      define_method(name) { get(name) }
       protected(name)
     end
 
