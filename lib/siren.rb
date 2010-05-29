@@ -1,5 +1,6 @@
 require 'siren/c'
 require 'siren/ast'
+require 'siren/int'
 require 'siren/float'
 require 'siren/bool'
 require 'siren/math'

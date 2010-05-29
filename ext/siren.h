@@ -13,12 +13,11 @@ int InitDSPSystem();
 
 typedef float Sample32; 
 
-typedef void (*TransitionFunc)(void *);
-typedef Sample32 (*RenderFunc)(void *);
+typedef Sample32 (*RenderFunc)(float, float, int, void *);
 
 typedef struct _Voice {
   RenderFunc render;
-  TransitionFunc trans;
+  int frame;
   void *state;
   struct _Voice *next;
 } Voice;
@@ -28,6 +27,8 @@ typedef Voice *VoiceID;
 typedef struct _DSPKernel {
   double fs;
   PaStream *stream;
+  int channels;
+  int frame;
   Voice *voiceList;
   OSSpinLock lock;
 } DSPKernel;
@@ -54,7 +55,7 @@ int DSPKernelStart(DSPKernel *kernel);
 
 int DSPKernelStop(DSPKernel *kernel);
 
-Voice *NewVoice(DSPKernel *kernel, RenderFunc render, TransitionFunc trans, void *state);
+Voice *NewVoice(DSPKernel *kernel, RenderFunc render, void *state);
 
 int RemoveVoice(DSPKernel *kernel, Voice *remove);
 

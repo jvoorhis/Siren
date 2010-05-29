@@ -1,4 +1,29 @@
 module Siren
+  class LiteralInt
+    attr_reader :value
+
+    def initialize(value)
+      @value = value.to_i
+    end
+
+    def accept(visitor)
+      visitor.visit_literal_int(@value)
+    end
+  end
+  
+  class IToF
+    attr_reader :int
+
+    def initialize(int)
+      @int = int
+    end
+
+    def accept(visitor)
+      i = @int.accept(visitor)
+      visitor.visit_itof(i)
+    end
+  end
+
   class LiteralFloat
     attr_reader :value
     
@@ -157,6 +182,21 @@ module Siren
 
     def accept(visitor)
       visitor.visit_literal_bool(@value)
+    end
+  end
+
+  class And
+    attr_reader :lhs, :rhs
+
+    def initialize(lhs, rhs)
+      @lhs = lhs
+      @rhs = rhs
+    end
+
+    def accept(visitor)
+      l = @lhs.accept(visitor)
+      r = @rhs.accept(visitor)
+      visitor.visit_and(l, r)
     end
   end
 

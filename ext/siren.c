@@ -28,7 +28,7 @@ int NewDSPKernel(double fs, DSPKernel **outKernel)
 
   PaError err;
   err = Pa_OpenDefaultStream(&kernel->stream,
-                             0, 1,
+                             0, 2,
                              paFloat32, 44100.0,
                              256,
                              (PaStreamCallback *)DSPKernelCallback,
@@ -37,6 +37,8 @@ int NewDSPKernel(double fs, DSPKernel **outKernel)
     fprintf(stderr, "Couldn't initialize audio stream: %s.\n", Pa_GetErrorText(err));
     return 1;
   }
+  kernel->frame = 0;
+  kernel->channels = 2;
   kernel->voiceList = NULL;
   kernel->lock = OS_SPINLOCK_INIT;
   *outKernel = kernel;
@@ -66,18 +68,25 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
                       DSPKernel *kernel)
 {
   Sample32 *out = (Sample32 *)bufferOut;
+  float ts = 1.0/kernel->fs;
   int frame;
+  int channel;
   Sample32 sampleOut;
   Voice *voice;
 
   DSPKernelLock(kernel);
   for (frame = 0; frame < frameCount; frame++) {
-    sampleOut = 0.0;
-    for (voice = kernel->voiceList; voice != NULL; voice = voice->next) {
-      sampleOut += voice->render(voice->state);
-      voice->trans(voice->state);
+    for (channel = 0; channel < kernel->channels; channel++) {
+      sampleOut = 0.0;
+      for (voice = kernel->voiceList; voice != NULL; voice = voice->next) {
+        sampleOut += voice->render(kernel->frame*ts, voice->frame*ts, channel, voice->state);
+      }
+      *out++ = clip(sampleOut);
     }
-    *out++ = clip(sampleOut);
+    for (voice = kernel->voiceList; voice != NULL; voice = voice->next) {
+      voice->frame++;
+    }
+    kernel->frame++;
   }
   DSPKernelUnlock(kernel);
 
@@ -104,11 +113,11 @@ int DSPKernelStop(DSPKernel *kernel)
   return 0;
 }
 
-VoiceID NewVoice(DSPKernel *kernel, RenderFunc render, TransitionFunc trans, void *state)
+VoiceID NewVoice(DSPKernel *kernel, RenderFunc render, void *state)
 {
   Voice *voice = malloc_ex(sizeof(Voice), pool);
   voice->render = render;
-  voice->trans = trans;
+  voice->frame = 0;
   voice->state = state;
   voice->next = kernel->voiceList;
   DSPKernelLock(kernel);

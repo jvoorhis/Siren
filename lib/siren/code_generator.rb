@@ -24,6 +24,14 @@ module Siren
       @builder.position_at_end(@basic_block)
     end
 
+    def visit_literal_int(int)
+      LLVM::Int(int)
+    end
+
+    def visit_itof(int)
+      @builder.si2fp(int, LLVM::Float)
+    end
+
     def visit_literal_float(float)
       LLVM::Float(float)
     end

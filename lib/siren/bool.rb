@@ -10,6 +10,16 @@ module Siren
       Bool.new(LiteralBool.new(x))
     end
 
+    def &(rhs)
+      case rhs
+      when Bool
+        Bool.new(And.new(self.node, rhs.node))
+      else
+        b, a = coerce(rhs)
+	a & b
+      end
+    end
+    
     def accept(visitor)
       @node.accept(visitor)
     end
