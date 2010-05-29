@@ -3,6 +3,7 @@
 
 #include <portaudio.h>
 #include <tlsf.h>
+#include <libkern/OSAtomic.h>
 
 #define POOL_SIZE 1024 * 1024
 
@@ -28,6 +29,7 @@ typedef struct _DSPKernel {
   double fs;
   PaStream *stream;
   Voice *voiceList;
+  OSSpinLock lock;
 } DSPKernel;
 
 int NewDSPKernel(double fs, DSPKernel **outKernel);
@@ -37,6 +39,10 @@ int DisposeDSPKernel(DSPKernel *kernel);
 void *DSPKernelMalloc(DSPKernel *kernel, size_t sz);
 
 int DSPKernelFree(DSPKernel *kernel, void *p);
+
+static inline void DSPKernelLock(DSPKernel *kernel);
+
+static inline void DSPKernelUnlock(DSPKernel *kernel);
 
 int DSPKernelCallback(const void *input, void *output,
                       unsigned long frameCount,

@@ -38,6 +38,7 @@ int NewDSPKernel(double fs, DSPKernel **outKernel)
     return 1;
   }
   kernel->voiceList = NULL;
+  kernel->lock = OS_SPINLOCK_INIT;
   *outKernel = kernel;
   return 0;
 }
@@ -46,6 +47,16 @@ int DisposeDSPKernel(DSPKernel *kernel)
 {
   free(kernel);
   return 0;
+}
+
+static inline void DSPKernelLock(DSPKernel *kernel)
+{
+  OSSpinLockLock(&kernel->lock);
+}
+
+static inline void DSPKernelUnlock(DSPKernel *kernel)
+{
+  OSSpinLockUnlock(&kernel->lock);
 }
 
 int DSPKernelCallback(const void *bufferIn, void *bufferOut,
@@ -59,6 +70,7 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
   Sample32 sampleOut;
   Voice *voice;
 
+  DSPKernelLock(kernel);
   for (frame = 0; frame < frameCount; frame++) {
     sampleOut = 0.0;
     for (voice = kernel->voiceList; voice != NULL; voice = voice->next) {
@@ -67,6 +79,7 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
     }
     *out++ = clip(sampleOut);
   }
+  DSPKernelUnlock(kernel);
 
   return paContinue;
 }
@@ -98,17 +111,21 @@ VoiceID NewVoice(DSPKernel *kernel, RenderFunc render, TransitionFunc trans, voi
   voice->trans = trans;
   voice->state = state;
   voice->next = kernel->voiceList;
+  DSPKernelLock(kernel);
   kernel->voiceList = voice;
+  DSPKernelUnlock(kernel);
   return (VoiceID)voice;
 }
 
 int RemoveVoice(DSPKernel *kernel, Voice *remove)
 {
   Voice *voice = kernel->voiceList;
+  DSPKernelLock(kernel);
 
   if (kernel->voiceList == remove) {
     kernel->voiceList = remove->next;
     free_ex(remove, pool);
+    DSPKernelUnlock(kernel);
     return 0;
   }
   
@@ -116,13 +133,17 @@ int RemoveVoice(DSPKernel *kernel, Voice *remove)
     voice = voice->next;
   }
 
+  int result;
   if (voice->next) {
     voice->next = remove->next;
     free_ex(remove, pool);
-    return 0;		
+    result = 0;		
   } else {             
-    return -1;
+    result = -1;
   }
+
+  DSPKernelUnlock(kernel);
+  return result;
 }
 
 Sample32 noise()
