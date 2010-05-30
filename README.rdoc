@@ -22,5 +22,6 @@ usability and obvious features like recording are forthcoming.
 * gamelan
 * LLVM 2.6, compiled with SHARED_LIBRARY=1
 * ruby-llvm
+* PortAudio (v19 branch tested)
 * diatonic (for examples only)
 
