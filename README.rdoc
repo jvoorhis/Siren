@@ -8,15 +8,23 @@ Siren is a domain specific language for synthesized music synthesis. It is
 unique in that it relies on LLVM for just-in-time compilation of DSP code
 from a simple specification.
 
+After obtaining the source, cd to the ext/ directory and run rake.
+
+  $ rake
+
+This will build the runtime and bundled libraries.
+
 The examples directory contains a sample instrument and score that may be
 run from the project directory as follows:
 
   $ ruby1.9 -Ipath/to/ruby-llvm/lib -Ilib -Ipath/to/diatonic -Iexamples examples/satie.rb
 
-Improvements to distribution (binary releases, bundled LLVM), documentation,
-usability and obvious features like recording are forthcoming.
+Improvements to distribution (binary releases, bundling PortAudio and LLVM),
+documentation, stability, usability, platform independence and obvious features
+like recording are forthcoming.
 
 == Requirements
+* OS X (needed for atomic ops, tested on 10.6.2)
 * ruby 1.9.1
 * ffi
 * gamelan
