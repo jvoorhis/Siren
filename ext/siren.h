@@ -26,6 +26,7 @@ typedef Voice *VoiceID;
 
 typedef struct _DSPKernel {
   double fs;
+  double ts;
   PaStream *stream;
   int channels;
   int frame;
@@ -33,13 +34,13 @@ typedef struct _DSPKernel {
   OSSpinLock lock;
 } DSPKernel;
 
-int NewDSPKernel(double fs, DSPKernel **outKernel);
+int DSPKernelDeviceCount();
+
+void DSPKernelDeviceName(int deviceID, const char **outDeviceName);
+
+int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel);
 
 int DisposeDSPKernel(DSPKernel *kernel);
-
-void *DSPKernelMalloc(DSPKernel *kernel, size_t sz);
-
-int DSPKernelFree(DSPKernel *kernel, void *p);
 
 static inline void DSPKernelLock(DSPKernel *kernel);
 

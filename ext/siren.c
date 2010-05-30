@@ -21,18 +21,33 @@ int InitDSPSystem()
   return 0;
 }
 
-int NewDSPKernel(double fs, DSPKernel **outKernel)
+int DSPKernelDeviceCount()
+{
+  return Pa_GetDeviceCount();
+}
+
+void DSPKernelDeviceName(int deviceID, const char **outDeviceName)
+{
+  const PaDeviceInfo *device = Pa_GetDeviceInfo(deviceID);
+  *outDeviceName = device ? device->name : NULL;
+}
+
+int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel)
 {
   DSPKernel *kernel = malloc(sizeof(DSPKernel));
   kernel->fs = fs;
+  kernel->ts = 1.0/fs;
 
+  PaStreamParameters outParameters = { deviceID, channels, paFloat32, 0.0, NULL };
   PaError err;
-  err = Pa_OpenDefaultStream(&kernel->stream,
-                             0, 2,
-                             paFloat32, 44100.0,
-                             256,
-                             (PaStreamCallback *)DSPKernelCallback,
-                             kernel);
+  err = Pa_OpenStream(&kernel->stream,
+                      NULL,
+                      &outParameters,
+                      fs,
+                      256,
+                      0,
+                      (PaStreamCallback *)DSPKernelCallback,
+                      kernel);
   if (paNoError != err) {
     fprintf(stderr, "Couldn't initialize audio stream: %s.\n", Pa_GetErrorText(err));
     return 1;
@@ -68,7 +83,6 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
                       DSPKernel *kernel)
 {
   Sample32 *out = (Sample32 *)bufferOut;
-  float ts = 1.0/kernel->fs;
   int frame;
   int channel;
   Sample32 sampleOut;
@@ -79,7 +93,9 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
     for (channel = 0; channel < kernel->channels; channel++) {
       sampleOut = 0.0;
       for (voice = kernel->voiceList; voice != NULL; voice = voice->next) {
-        sampleOut += voice->render(kernel->frame*ts, voice->frame*ts, channel, voice->state);
+        sampleOut += voice->render(kernel->frame * kernel->ts,
+                                   voice->frame * kernel->ts,
+                                   channel, voice->state);
       }
       *out++ = clip(sampleOut);
     }

@@ -8,7 +8,9 @@ module Siren
     typedef :int32, :OSSpinLock
 
     attach_function :InitDSPSystem, [], :int
-    attach_function :NewDSPKernel, [:double, :pointer], :int
+    attach_function :DSPKernelDeviceCount, [], :int
+    attach_function :DSPKernelDeviceName, [:int, :pointer], :void
+    attach_function :NewDSPKernel, [:int, :int, :double, :pointer], :int
     attach_function :DisposeDSPKernel, [:pointer], :int
     attach_function :DSPKernelCallback, [:pointer, :pointer, :ulong, :pointer, :int, :pointer], :int
     attach_function :DSPKernelStart, [:pointer], :int
@@ -25,6 +27,7 @@ module Siren
 
     class DSPKernel < FFI::ManagedStruct
       layout :fs,        :double,
+             :ts,        :double,
              :stream,    :pointer,
              :frame,     :int,
 	     :channels,  :int,
