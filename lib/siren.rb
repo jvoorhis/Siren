@@ -9,6 +9,8 @@ require 'siren/voice'
 require 'siren/dsp_kernel'
 require 'siren/event'
 
+require 'gamelan'
+
 module Kernel
   def target_type_for(tag)
     case tag
@@ -21,8 +23,22 @@ module Kernel
 end
 
 module Siren
-  def init
+  module_function
+
+  def init!
     C.InitDSPSystem
   end
-  module_function :init
+
+  def audition(score, tempo, device_spec)
+    Siren.init!
+    device = Siren::DSPKernel.select_device(device_spec)
+    kernel = Siren::DSPKernel.new(:device_id => device)
+    scheduler = Gamelan::Scheduler.new(:tempo => tempo)
+    score.schedule(0, scheduler, kernel)
+    scheduler.at(score.duration) { scheduler.stop }
+    kernel.start
+    scheduler.run
+    scheduler.join
+    kernel.stop
+  end
 end
