@@ -38,7 +38,7 @@ int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel)
   kernel->fs = fs;
   kernel->ts = 1.0/fs;
 
-  PaStreamParameters outParameters = { deviceID, channels, paFloat32, 0.0, NULL };
+  PaStreamParameters outParameters = { deviceID, channels, paFloat32, 0, NULL };
   PaError err;
   err = Pa_OpenStream(&kernel->stream,
                       NULL,
@@ -53,7 +53,7 @@ int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel)
     return 1;
   }
   kernel->frame = 0;
-  kernel->channels = 2;
+  kernel->channels = channels;
   kernel->voiceList = NULL;
   kernel->lock = OS_SPINLOCK_INIT;
   *outKernel = kernel;
