@@ -1,0 +1,26 @@
+= Siren
+
+Author:: Jeremy Voorhis <jvoorhis@gmail.com>
+Copyright:: Copyright (c) 2010 Jeremy Voorhis
+License:: GPL3 (see LICENSE)
+
+Siren is a domain specific language for synthesized music synthesis. It is
+unique in that it relies on LLVM for just-in-time compilation of DSP code
+from a simple specification.
+
+The examples directory contains a sample instrument and score that may be
+run from the project directory as follows:
+
+  $ ruby1.9 -Ipath/to/ruby-llvm/lib -Ilib -Ipath/to/diatonic -Iexamples examples/satie.rb
+
+Improvements to distribution (binary releases, bundled LLVM), documentation,
+usability and obvious features like recording are forthcoming.
+
+== Requirements
+* ruby 1.9.1
+* ffi
+* gamelan
+* LLVM 2.6, compiled with SHARED_LIBRARY=1
+* ruby-llvm
+* diatonic (for examples only)
+
