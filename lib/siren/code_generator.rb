@@ -9,9 +9,7 @@ module Siren
   Mod.functions.add(:cosf, [LLVM::Float], LLVM::Float)
   Mod.functions.add(:tanf, [LLVM::Float], LLVM::Float)
 
-  EE = LLVM::ExecutionEngine.create_jit_compiler(
-    LLVM::ModuleProvider.for_existing_module(Mod)
-  )
+  EE = LLVM::ExecutionEngine.create_jit_compiler(Mod)
 
   class CodeGenerator
     def initialize(mod, function, basic_block, builder, bindings)
