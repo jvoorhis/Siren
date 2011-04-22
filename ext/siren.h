@@ -2,12 +2,6 @@
 #define __SIREN_H
 
 #include <portaudio.h>
-#include <tlsf.h>
-#include <libkern/OSAtomic.h>
-
-#define POOL_SIZE 1024 * 1024
-
-static char pool[POOL_SIZE];
 
 int InitDSPSystem();
 
@@ -31,7 +25,6 @@ typedef struct _DSPKernel {
   int channels;
   int frame;
   Voice *voiceList;
-  OSSpinLock lock;
 } DSPKernel;
 
 int DSPKernelDeviceCount();
@@ -41,10 +34,6 @@ void DSPKernelDeviceName(int deviceID, const char **outDeviceName);
 int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel);
 
 int DisposeDSPKernel(DSPKernel *kernel);
-
-static inline void DSPKernelLock(DSPKernel *kernel);
-
-static inline void DSPKernelUnlock(DSPKernel *kernel);
 
 int DSPKernelCallback(const void *input, void *output,
                       unsigned long frameCount,

@@ -11,8 +11,6 @@ static inline Sample32 clip(Sample32 samp)
 
 int InitDSPSystem()
 {
-  init_memory_pool(POOL_SIZE, pool);
-
   if (Pa_Initialize()) {
     fprintf(stderr, "Error initializing PortAudio");
     return 1;
@@ -55,7 +53,6 @@ int NewDSPKernel(int deviceID, int channels, double fs, DSPKernel **outKernel)
   kernel->frame = 0;
   kernel->channels = channels;
   kernel->voiceList = NULL;
-  kernel->lock = OS_SPINLOCK_INIT;
   *outKernel = kernel;
   return 0;
 }
@@ -64,16 +61,6 @@ int DisposeDSPKernel(DSPKernel *kernel)
 {
   free(kernel);
   return 0;
-}
-
-static inline void DSPKernelLock(DSPKernel *kernel)
-{
-  OSSpinLockLock(&kernel->lock);
-}
-
-static inline void DSPKernelUnlock(DSPKernel *kernel)
-{
-  OSSpinLockUnlock(&kernel->lock);
 }
 
 int DSPKernelCallback(const void *bufferIn, void *bufferOut,
@@ -88,7 +75,6 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
   Sample32 sampleOut;
   Voice *voice;
 
-  DSPKernelLock(kernel);
   for (frame = 0; frame < frameCount; frame++) {
     for (channel = 0; channel < kernel->channels; channel++) {
       sampleOut = 0.0;
@@ -104,7 +90,6 @@ int DSPKernelCallback(const void *bufferIn, void *bufferOut,
     }
     kernel->frame++;
   }
-  DSPKernelUnlock(kernel);
 
   return paContinue;
 }
@@ -131,26 +116,22 @@ int DSPKernelStop(DSPKernel *kernel)
 
 VoiceID NewVoice(DSPKernel *kernel, RenderFunc render, void *state)
 {
-  Voice *voice = malloc_ex(sizeof(Voice), pool);
+  Voice *voice = malloc(sizeof(Voice));
   voice->render = render;
   voice->frame = 0;
   voice->state = state;
   voice->next = kernel->voiceList;
-  DSPKernelLock(kernel);
   kernel->voiceList = voice;
-  DSPKernelUnlock(kernel);
   return (VoiceID)voice;
 }
 
 int RemoveVoice(DSPKernel *kernel, Voice *remove)
 {
   Voice *voice = kernel->voiceList;
-  DSPKernelLock(kernel);
 
   if (kernel->voiceList == remove) {
     kernel->voiceList = remove->next;
-    free_ex(remove, pool);
-    DSPKernelUnlock(kernel);
+    free(remove);
     return 0;
   }
   
@@ -161,13 +142,12 @@ int RemoveVoice(DSPKernel *kernel, Voice *remove)
   int result;
   if (voice->next) {
     voice->next = remove->next;
-    free_ex(remove, pool);
+    free(remove);
     result = 0;		
   } else {             
     result = -1;
   }
 
-  DSPKernelUnlock(kernel);
   return result;
 }
 
