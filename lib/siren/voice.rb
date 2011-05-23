@@ -86,7 +86,7 @@ module Siren
     
     def make_render_func
       Mod.functions.add(render_func_sym, render_func_type) do |func, gt, vt, channel, state|
-        builder = LLVM::Builder.create
+        builder = LLVM::Builder.new
         entry = func.basic_blocks.append("entry")
         builder.position_at_end(entry)
 

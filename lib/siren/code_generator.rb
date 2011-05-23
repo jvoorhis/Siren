@@ -3,13 +3,13 @@ require 'llvm/execution_engine'
 
 module Siren
   LLVM.init_x86
-  Mod = LLVM::Module.create("Siren")
+  Mod = LLVM::Module.new("Siren")
   Mod.functions.add(:powf, [LLVM::Float, LLVM::Float], LLVM::Float)
   Mod.functions.add(:sinf, [LLVM::Float], LLVM::Float)
   Mod.functions.add(:cosf, [LLVM::Float], LLVM::Float)
   Mod.functions.add(:tanf, [LLVM::Float], LLVM::Float)
 
-  EE = LLVM::ExecutionEngine.create_jit_compiler(Mod)
+  EE = LLVM::JITCompiler.new(Mod)
 
   class CodeGenerator
     def initialize(mod, function, basic_block, builder, bindings)
